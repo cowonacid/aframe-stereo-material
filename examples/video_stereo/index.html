@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Aframe - stereo material (video example)</title>
+    <meta name="description" content="Aframe - stereo material (video example)">
+     <script src="../build.js"></script>
+  </head>
+  <body>
+      <a-scene>
+        <a-sun-sky material="sunPosition: -0.2 0.5 -5"></a-sun-sky>
+        <video id="video" loop>
+            <source src="sample.mp4" type="video/mp4" />
+        </video>
+        <a-camera position="0 0 0" stereo-cam="eye:left;"></a-camera>
+
+        <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 180; open-ended: true; radius: 12; height: 20;"
+              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:left; split:vertical; mode: cinema;"></a-entity>
+
+        <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 180; open-ended: true; radius: 12; height: 20;"
+              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:right; split:vertical; mode:cinema;"></a-entity>
+      </a-scene>
+  </body>
+</html>
