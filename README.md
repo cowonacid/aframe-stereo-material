@@ -1,6 +1,6 @@
 # aframe-stereo-material
 
-use stereoscopic images or videos as material for your aframe objects
+Use stereoscopic images or videos as material for your aframe objects.
 
 ### What does this component?
 
@@ -25,4 +25,4 @@ npm run dev
 
 Main part from the code i bought from oscarmarinmiro https://github.com/oscarmarinmiro/aframe-stereo-component
 
-The example video is part of a creativ commons movie, created with blender https://www.blender.org/features/projects/
+The example video is part of a creativ commons movie, called "Big Buck Bunny", created with blender https://peach.blender.org

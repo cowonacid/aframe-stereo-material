@@ -5,20 +5,60 @@
     <title>Aframe - stereo material (video example)</title>
     <meta name="description" content="Aframe - stereo material (video example)">
      <script src="../build.js"></script>
+     <script>
+        AFRAME.registerComponent('play-video', {
+            schema: {default: ''},
+            init() {
+                this.el.addEventListener('click', () => {
+                    var video = document.getElementById(this.data);
+                    video.play();
+                });
+            }
+        });
+    </script>
   </head>
   <body>
       <a-scene>
         <a-sun-sky material="sunPosition: -0.2 0.5 -5"></a-sun-sky>
         <video id="video" loop>
             <source src="sample.mp4" type="video/mp4" />
+            <img id="play" src="play.png" />
         </video>
-        <a-camera position="0 0 0" stereo-cam="eye:left;"></a-camera>
+        <a-entity camera wasd-controls look-controls position="0 4 15" stereo-cam="eye:left;">
+            <a-entity cursor="fuse: true; fuseTimeout: 500"
+                    position="0 0 -1"
+                    scale="0.02 0.02 0"
+                    geometry="primitive: ring;"
+                    material="color: #FFF; shader: flat">
+                    <a-animation begin="cursor-fusing" easing="ease-in" attribute="scale"
+                         fill="backwards" from="0.02 0.02 0" to="0.05 0.05 0"></a-animation>
+          </a-entity>
+        </a-entity>
+
+        <a-image play-video="video" id="video-play" position="0 4 -3" width="0.6" height="0.6" src="#play" transparent="true"></a-image>
 
         <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 180; open-ended: true; radius: 12; height: 20;"
               position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:left; split:vertical; mode: cinema;"></a-entity>
 
         <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 180; open-ended: true; radius: 12; height: 20;"
               position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:right; split:vertical; mode:cinema;"></a-entity>
+
+         <!-- <a-sky color="#000000"></a-sky> -->
       </a-scene>
+      <script>
+        var video = document.getElementById('video');
+        video.addEventListener("click", function () {
+            video.play();
+        });
+
+        video.onplay = function() {
+            var vPlay = document.getElementById('video-play');
+            vPlay.parentNode.removeChild(vPlay);
+        };
+
+        if (typeof video.onclick == "function") {
+            video.onclick.apply(elem);
+        }
+    </script>
   </body>
 </html>
