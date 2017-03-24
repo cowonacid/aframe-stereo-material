@@ -1,21 +1,21 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var AFRAME = require('aframe');
+var sunSky = require('aframe-sun-sky');
 var stereoMaterial = require('../index.js').stereo_material;
 var stereoCam = require('../index.js').stereo_cam;
 
-AFRAME.registerComponent('stereo_material', stereoMaterial);
-AFRAME.registerComponent('stereo_cam', stereoCam);
+AFRAME.registerComponent('sunsky', sunSky);
+AFRAME.registerComponent('stereo-material', stereoMaterial);
+AFRAME.registerComponent('stereo-cam', stereoCam);
 
 require('aframe');
 
-},{"../index.js":2,"aframe":3}],2:[function(require,module,exports){
+},{"../index.js":2,"aframe":4,"aframe-sun-sky":3}],2:[function(require,module,exports){
 module.exports = {
 
-	// Put an object into left, right or both eyes.
-	// If it's a video sphere, take care of correct stereo mapping for both eyes (if full dome)
-	// or half the sphere (if half dome)
-
 	'stereo_material': {
+
+		/* defaults */
 		schema: {
 			eye: {
 				type: 'string',
@@ -30,19 +30,12 @@ module.exports = {
 				default: "horizontal"
 			}
 		},
+
 		init: function() {
 
-			// Flag to acknowledge if 'click' on video has been attached to canvas
-			// Keep in mind that canvas is the last thing initialized on a scene so have to wait for the event
-			// or just check in every tick if is not undefined
-
+			/* check if material is video and manage video click eventhandler*/
 			this.video_click_event_added = false;
-
 			this.material_is_a_video = false;
-
-			// Check if material is a video from html tag (object3D.material.map instanceof THREE.VideoTexture does not
-			// always work
-
 			if (this.el.getAttribute("material") !== null && 'src' in this.el.getAttribute("material") && this.el.getAttribute("material").src !== "") {
 				var src = this.el.getAttribute("material").src;
 				// If src is a string, treat it like a selector, for aframe <= v0.3
@@ -56,20 +49,19 @@ module.exports = {
 				}
 			}
 
+
+			/* get object (first children is object, because all objects are grouped) */
 			var object3D = this.el.object3D.children[0];
-			// console.log(object3D);
 
-			// In A-Frame 0.2.0, objects are all groups so sphere is the first children
-			// Check if it's a sphere w/ video material, and if so
-			// Note that in A-Frame 0.2.0, sphere entities are THREE.SphereBufferGeometry, while in A-Frame 0.3.0,
-			// sphere entities are THREE.BufferGeometry.
-
+			/* valid geometry checks ... todo: implement your code here */
 			var validGeometries = [THREE.SphereGeometry, THREE.CylinderGeometry, THREE.SphereBufferGeometry, THREE.BufferGeometry];
 			var isValidGeometry = validGeometries.some(function(geometry) {
 				return object3D.geometry instanceof geometry;
 			});
 
 			if (isValidGeometry && this.material_is_a_video) {
+
+				console.log(this.data);
 
 				if (this.data.mode === "half") {
 					var geo_def = this.el.getAttribute("geometry");
@@ -83,9 +75,8 @@ module.exports = {
 				}
 
 
-				// If left eye is set, and the split is horizontal, take the left half of the video texture. If the split
-				// is set to vertical, take the top/upper half of the video texture.
-
+				/* If left eye is set, and the split is horizontal, take the left half of the video texture. If the split
+				   is set to vertical, take the top/upper half of the video texture. */
 				if (this.data.eye === "left") {
 					console.log('left');
 					var uvs = geometry.faceVertexUvs[0];
@@ -102,9 +93,8 @@ module.exports = {
 					}
 				}
 
-				// If right eye is set, and the split is horizontal, take the right half of the video texture. If the split
-				// is set to vertical, take the bottom/lower half of the video texture.
-
+				/* If right eye is set, and the split is horizontal, take the right half of the video texture. If the split
+				   is set to vertical, take the bottom/lower half of the video texture. */
 				if (this.data.eye === "right") {
 					var uvs = geometry.faceVertexUvs[0];
 					var axis = this.data.split === "vertical" ? "y" : "x";
@@ -120,26 +110,19 @@ module.exports = {
 					}
 				}
 
-				// As AFrame 0.2.0 builds bufferspheres from sphere entities, transform
-				// into buffergeometry for coherence
-
+				/* transform geometry into buffergeometry for coherence */
 				object3D.geometry = new THREE.BufferGeometry().fromGeometry(geometry);
 
 			} else {
 
-				// No need to attach video click if not a sphere and not a video, set this to true
-
+				/* todo: reorginisation ... No need to attach video click if not a sphere and not a video, set this to true */
 				this.video_click_event_added = true;
-
 			}
-
-
 		},
 
-		// On element update, put in the right layer, 0:both, 1:left, 2:right (spheres or not)
 
+		/* on element update, put in the right layer, 0:both, 1:left, 2:right (spheres or not) */
 		update: function(oldData) {
-
 			var object3D = this.el.object3D.children[0];
 			var data = this.data;
 
@@ -148,30 +131,23 @@ module.exports = {
 			} else {
 				object3D.layers.set(data.eye === 'left' ? 1 : 2);
 			}
-
 		},
+
 
 		tick: function(time) {
 
-			// If this value is false, it means that (a) this is a video on a sphere [see init method]
-			// and (b) of course, tick is not added
-
+			/* If this value is false, it means that (a) this is a video on a sphere [see init method]
+			  and (b) of course, tick is not added */
 			if (!this.video_click_event_added) {
 				if (typeof(this.el.sceneEl.canvas) !== 'undefined') {
 
-					// Get video DOM
-
 					this.videoEl = this.el.object3D.children[0].material.map.image;
-
-					// On canvas click, play video element. Use self to not lose track of object into event handler
-
 					var self = this;
 
 					this.el.sceneEl.canvas.onclick = function() {
 						self.videoEl.play();
 					};
 
-					// Signal that click event is added
 					this.video_click_event_added = true;
 
 				}
@@ -180,10 +156,10 @@ module.exports = {
 		}
 	},
 
-	// Sets the 'default' eye viewed by camera in non-VR mode
 
 	'stereo_cam': {
 
+		/* defaults */
 		schema: {
 			eye: {
 				type: 'string',
@@ -191,12 +167,9 @@ module.exports = {
 			}
 		},
 
-		// Cam is not attached on init, so use a flag to do this once at 'tick'
-
-		// Use update every tick if flagged as 'not changed yet'
-
+		/* cam is not attached on init, so use a flag to do this once at 'tick'
+		   Use update every tick if flagged as 'not changed yet' */
 		init: function() {
-			// Flag to register if cam layer has already changed
 			this.layer_changed = false;
 		},
 
@@ -204,22 +177,16 @@ module.exports = {
 
 			var originalData = this.data;
 
-			// If layer never changed
-
 			if (!this.layer_changed) {
 
-				// because stereocam component should be attached to an a-camera element
-				// need to get down to the root PerspectiveCamera before addressing layers
-
-				// Gather the children of this a-camera and identify types
-
+				/* gather the children of this a-camera and identify types */
 				var childrenTypes = [];
 
 				this.el.object3D.children.forEach(function(item, index, array) {
 					childrenTypes[index] = item.type;
 				});
 
-				// Retrieve the PerspectiveCamera
+				/* retrieve the PerspectiveCamera */
 				var rootIndex = childrenTypes.indexOf("PerspectiveCamera");
 				var rootCam = this.el.object3D.children[rootIndex];
 
@@ -236,6 +203,108 @@ module.exports = {
 };;
 
 },{}],3:[function(require,module,exports){
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var vertexShader = __webpack_require__(1);
+	var fragmentShader = __webpack_require__(2);
+
+	AFRAME.registerShader('sunSky', {
+	  schema: {
+	    luminance: {default: 1, max: 0, min: 2, is: 'uniform'},
+	    mieCoefficient: {default: 0.005, min: 0, max: 0.1, is: 'uniform'},
+	    mieDirectionalG: {default: 0.8, min: 0, max: 1, is: 'uniform'},
+	    reileigh: {default: 1, max: 0, min: 4, is: 'uniform'},
+	    sunPosition: {type: 'vec3', default: '0 0 -1', is: 'uniform'},
+	    turbidity: {default: 2, max: 0, min: 20, is: 'uniform'}
+	  },
+	  vertexShader: vertexShader,
+	  fragmentShader: fragmentShader
+	});
+
+	AFRAME.registerPrimitive('a-sun-sky', {
+	  defaultComponents: {
+	    geometry: {
+	      primitive: 'sphere',
+	      radius: 5000,
+	      segmentsWidth: 64,
+	      segmentsHeight: 20
+	    },
+	    material: {
+	      shader: 'sunSky'
+	    },
+	    scale: '-1 1 1'
+	  },
+
+	  mappings: {
+	    luminance: 'material.luminance',
+	    mieCoefficient: 'material.mieCoefficient',
+	    mieDirectionalG: 'material.mieDirectionalG',
+	    reileigh: 'material.reileigh',
+	    sunPosition: 'material.sunPosition',
+	    turbidity: 'material.turbidity'
+	  }
+	});
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec3 vWorldPosition;\n\nvoid main() {\n  vec4 worldPosition = modelMatrix * vec4(position, 1.0);\n  vWorldPosition = worldPosition.xyz;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}\n"
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	module.exports = "uniform sampler2D skySampler;\nuniform vec3 sunPosition;\nvarying vec3 vWorldPosition;\n\nvec3 cameraPos = vec3(0., 0., 0.);\n\nuniform float luminance;\nuniform float turbidity;\nuniform float reileigh;\nuniform float mieCoefficient;\nuniform float mieDirectionalG;\n\n// constants for atmospheric scattering\nconst float e = 2.71828182845904523536028747135266249775724709369995957;\nconst float pi = 3.141592653589793238462643383279502884197169;\n\nconst float n = 1.0003; // refractive index of air\nconst float N = 2.545E25; // number of molecules per unit volume for air at\n// 288.15K and 1013mb (sea level -45 celsius)\nconst float pn = 0.035;  // depolatization factor for standard air\n\n// wavelength of used primaries, according to preetham\nconst vec3 lambda = vec3(680E-9, 550E-9, 450E-9);\n\n// mie stuff\n// K coefficient for the primaries\nconst vec3 K = vec3(0.686, 0.678, 0.666);\nconst float v = 4.0;\n\n// optical length at zenith for molecules\nconst float rayleighZenithLength = 8.4E3;\nconst float mieZenithLength = 1.25E3;\nconst vec3 up = vec3(0.0, 1.0, 0.0);\n\nconst float EE = 1000.0;\nconst float sunAngularDiameterCos = 0.999956676946448443553574619906976478926848692873900859324;\n// 66 arc seconds -> degrees, and the cosine of that\n\n// earth shadow hack\nconst float cutoffAngle = pi/1.95;\nconst float steepness = 1.5;\n\nvec3 totalRayleigh(vec3 lambda)\n{\n  return (8.0 * pow(pi, 3.0) * pow(pow(n, 2.0) - 1.0, 2.0) * (6.0 + 3.0 * pn)) / (3.0 * N * pow(lambda, vec3(4.0)) * (6.0 - 7.0 * pn));\n}\n\n// see http://blenderartists.org/forum/showthread.php?321110-Shaders-and-Skybox-madness\n// A simplied version of the total Rayleigh scattering to works on browsers that use ANGLE\nvec3 simplifiedRayleigh()\n{\n  return 0.0005 / vec3(94, 40, 18);\n}\n\nfloat rayleighPhase(float cosTheta)\n{\n  return (3.0 / (16.0*pi)) * (1.0 + pow(cosTheta, 2.0));\n}\n\nvec3 totalMie(vec3 lambda, vec3 K, float T)\n{\n  float c = (0.2 * T ) * 10E-18;\n  return 0.434 * c * pi * pow((2.0 * pi) / lambda, vec3(v - 2.0)) * K;\n}\n\nfloat hgPhase(float cosTheta, float g)\n{\n  return (1.0 / (4.0*pi)) * ((1.0 - pow(g, 2.0)) / pow(1.0 - 2.0*g*cosTheta + pow(g, 2.0), 1.5));\n}\n\nfloat sunIntensity(float zenithAngleCos)\n{\n  return EE * max(0.0, 1.0 - exp(-((cutoffAngle - acos(zenithAngleCos))/steepness)));\n}\n\n// Filmic ToneMapping http://filmicgames.com/archives/75\nfloat A = 0.15;\nfloat B = 0.50;\nfloat C = 0.10;\nfloat D = 0.20;\nfloat E = 0.02;\nfloat F = 0.30;\nfloat W = 1000.0;\n\nvec3 Uncharted2Tonemap(vec3 x)\n{\n   return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;\n}\n\nvoid main()\n{\n  float sunfade = 1.0-clamp(1.0-exp((sunPosition.y/450000.0)),0.0,1.0);\n\n  float reileighCoefficient = reileigh - (1.0* (1.0-sunfade));\n\n  vec3 sunDirection = normalize(sunPosition);\n\n  float sunE = sunIntensity(dot(sunDirection, up));\n\n  // extinction (absorbtion + out scattering)\n  // rayleigh coefficients\n\n  vec3 betaR = simplifiedRayleigh() * reileighCoefficient;\n\n  // mie coefficients\n  vec3 betaM = totalMie(lambda, K, turbidity) * mieCoefficient;\n\n  // optical length\n  // cutoff angle at 90 to avoid singularity in next formula.\n  float zenithAngle = acos(max(0.0, dot(up, normalize(vWorldPosition - cameraPos))));\n  float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));\n  float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));\n\n  // combined extinction factor\n  vec3 Fex = exp(-(betaR * sR + betaM * sM));\n\n  // in scattering\n  float cosTheta = dot(normalize(vWorldPosition - cameraPos), sunDirection);\n\n  float rPhase = rayleighPhase(cosTheta*0.5+0.5);\n  vec3 betaRTheta = betaR * rPhase;\n\n  float mPhase = hgPhase(cosTheta, mieDirectionalG);\n  vec3 betaMTheta = betaM * mPhase;\n\n  vec3 Lin = pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * (1.0 - Fex),vec3(1.5));\n  Lin *= mix(vec3(1.0),pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * Fex,vec3(1.0/2.0)),clamp(pow(1.0-dot(up, sunDirection),5.0),0.0,1.0));\n\n  //nightsky\n  vec3 direction = normalize(vWorldPosition - cameraPos);\n  float theta = acos(direction.y); // elevation --> y-axis, [-pi/2, pi/2]\n  float phi = atan(direction.z, direction.x); // azimuth --> x-axis [-pi/2, pi/2]\n  vec2 uv = vec2(phi, theta) / vec2(2.0*pi, pi) + vec2(0.5, 0.0);\n  // vec3 L0 = texture2D(skySampler, uv).rgb+0.1 * Fex;\n  vec3 L0 = vec3(0.1) * Fex;\n\n  // composition + solar disc\n  float sundisk = smoothstep(sunAngularDiameterCos,sunAngularDiameterCos+0.00002,cosTheta);\n  L0 += (sunE * 19000.0 * Fex)*sundisk;\n\n  vec3 whiteScale = 1.0/Uncharted2Tonemap(vec3(W));\n\n  vec3 texColor = (Lin+L0);\n  texColor *= 0.04 ;\n  texColor += vec3(0.0,0.001,0.0025)*0.3;\n\n  float g_fMaxLuminance = 1.0;\n  float fLumScaled = 0.1 / luminance;\n  float fLumCompressed = (fLumScaled * (1.0 + (fLumScaled / (g_fMaxLuminance * g_fMaxLuminance)))) / (1.0 + fLumScaled);\n\n  float ExposureBias = fLumCompressed;\n\n  vec3 curr = Uncharted2Tonemap((log2(2.0/pow(luminance,4.0)))*texColor);\n  vec3 color = curr*whiteScale;\n\n  vec3 retColor = pow(color,vec3(1.0/(1.2+(1.2*sunfade))));\n\n  gl_FragColor.rgb = retColor;\n\n  gl_FragColor.a = 1.0;\n}\n"
+
+/***/ }
+/******/ ]);
+},{}],4:[function(require,module,exports){
 (function (global){
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.AFRAME = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var str = Object.prototype.toString
