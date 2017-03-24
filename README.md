@@ -2,7 +2,7 @@
 
 use stereoscopic images or videos as material for your aframe objects
 
-### code adopted from aframe-stereo-component
+### what does this plugin?
 
 My goal with this component is to to add the ability to use stereoscopic materials (videos and images) in
 a simple way. This is my first try for a private projekt. An Example video, renderd on a cylinder can be seen
