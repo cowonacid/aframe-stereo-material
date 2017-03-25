@@ -15,25 +15,34 @@ module.exports = {
 			split: {
 				type: 'string',
 				default: "horizontal"
+			},
+			source: {
+				type: null,
+				file: null
 			}
 		},
 
-		init: function() {
+		init: function () {
 
 			/* check if material is video and manage video click eventhandler*/
 			this.video_click_event_added = false;
 			this.material_is_a_video = false;
 			if (this.el.getAttribute("material") !== null && 'src' in this.el.getAttribute("material") && this.el.getAttribute("material").src !== "") {
 				var src = this.el.getAttribute("material").src;
-				// If src is a string, treat it like a selector, for aframe <= v0.3
-				if ((toString.call(src) == '[object String]' &&
-						document.querySelector(src) !== null &&
-						document.querySelector(src).tagName === "VIDEO") ||
-					// If src is a video element , just get the tagName
-					('tagName' in src &&
-						src.tagName === "VIDEO")) {
-					this.material_is_a_video = true;
-				}
+				var fileType = this.getFileType(src);
+
+				this.material_is_a_video = true;
+				// console.log('----- DEBUG ------');
+				// console.log(src);
+				// // If src is a string, treat it like a selector, for aframe <= v0.3
+				// if ((toString.call(src) == '[object String]' &&
+				// 		document.querySelector(src) !== null &&
+				// 		document.querySelector(src).tagName === "VIDEO") ||
+				// 	// If src is a video element , just get the tagName
+				// 	('tagName' in src &&
+				// 		src.tagName === "VIDEO")) {
+				// 	this.material_is_a_video = true;
+				// }
 			}
 
 
@@ -42,7 +51,7 @@ module.exports = {
 
 			/* valid geometry checks ... todo: implement your code here */
 			var validGeometries = [THREE.SphereGeometry, THREE.CylinderGeometry, THREE.SphereBufferGeometry, THREE.BufferGeometry];
-			var isValidGeometry = validGeometries.some(function(geometry) {
+			var isValidGeometry = validGeometries.some(function (geometry) {
 				return object3D.geometry instanceof geometry;
 			});
 
@@ -55,6 +64,7 @@ module.exports = {
 					var geometry = new THREE.SphereGeometry(geo_def.radius || 100, geo_def.segmentsWidth || 64, geo_def.segmentsHeight || 64, Math.PI / 2, Math.PI, 0, Math.PI);
 				} else if (this.data.mode === "cinema") {
 					var geo_def = this.el.getAttribute("geometry");
+					console.log(geo_def);
 					var geometry = new THREE.CylinderGeometry(geo_def.radius * 10, geo_def.radius * 10, geo_def.height * 10, 50, 1, true, geo_def.thetaStart, geo_def.thetaLength * Math.PI / 180);
 				} else {
 					var geo_def = this.el.getAttribute("geometry");
@@ -65,7 +75,6 @@ module.exports = {
 				/* If left eye is set, and the split is horizontal, take the left half of the video texture. If the split
 				   is set to vertical, take the top/upper half of the video texture. */
 				if (this.data.eye === "left") {
-					console.log('left');
 					var uvs = geometry.faceVertexUvs[0];
 					var axis = this.data.split === "vertical" ? "y" : "x";
 					for (var i = 0; i < uvs.length; i++) {
@@ -107,9 +116,20 @@ module.exports = {
 			}
 		},
 
+		getFileType: function (src) {
+			var re = /(?:\.([^.]+))?$/;
+			var ext = re.exec(src)[1];
+
+			if (typeof ext == 'undefined') {
+				return false;
+			}
+
+			return ext;
+		},
+
 
 		/* on element update, put in the right layer, 0:both, 1:left, 2:right (spheres or not) */
-		update: function(oldData) {
+		update: function (oldData) {
 			var object3D = this.el.object3D.children[0];
 			var data = this.data;
 
@@ -121,24 +141,24 @@ module.exports = {
 		},
 
 
-		tick: function(time) {
+		tick: function (time) {
 
 			/* If this value is false, it means that (a) this is a video on a sphere [see init method]
 			  and (b) of course, tick is not added */
-			if (!this.video_click_event_added) {
-				if (typeof(this.el.sceneEl.canvas) !== 'undefined') {
-
-					this.videoEl = this.el.object3D.children[0].material.map.image;
-					var self = this;
-
-					this.el.sceneEl.canvas.onclick = function() {
-						self.videoEl.play();
-					};
-
-					this.video_click_event_added = true;
-
-				}
-			}
+			// if (!this.video_click_event_added) {
+			// 	if (typeof(this.el.sceneEl.canvas) !== 'undefined') {
+			//
+			// 		this.videoEl = this.el.object3D.children[0].material.map.image;
+			// 		var self = this;
+			//
+			// 		this.el.sceneEl.canvas.onclick = function() {
+			// 			self.videoEl.play();
+			// 		};
+			//
+			// 		this.video_click_event_added = true;
+			//
+			// 	}
+			// }
 
 		}
 	},
@@ -156,11 +176,11 @@ module.exports = {
 
 		/* cam is not attached on init, so use a flag to do this once at 'tick'
 		   Use update every tick if flagged as 'not changed yet' */
-		init: function() {
+		init: function () {
 			this.layer_changed = false;
 		},
 
-		tick: function(time) {
+		tick: function (time) {
 
 			var originalData = this.data;
 
@@ -169,7 +189,7 @@ module.exports = {
 				/* gather the children of this a-camera and identify types */
 				var childrenTypes = [];
 
-				this.el.object3D.children.forEach(function(item, index, array) {
+				this.el.object3D.children.forEach(function (item, index, array) {
 					childrenTypes[index] = item.type;
 				});
 
