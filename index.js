@@ -21,7 +21,7 @@ module.exports = {
 
 		/* init */
 		init: function() {
-			
+
 			/* get object3d */
 			this.object3D = this.el.object3D.children[0];
 
@@ -40,7 +40,7 @@ module.exports = {
 
 
 		/* check if video object */
-		checkIfVideo(src) {
+		checkIfVideo: function(src) {
 			if (this.el.getAttribute('material') !== null && 'src' in this.el.getAttribute('material') && this.el.getAttribute('material').src !== '') {
 				var src = this.el.getAttribute('material').src;
 				if(typeof(src) == 'object' && Object.prototype.toString.call(src) == '[object HTMLVideoElement]') {
