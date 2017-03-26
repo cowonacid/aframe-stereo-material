@@ -1,45 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Aframe - stereo material (video example)</title>
-    <meta name="description" content="Aframe - stereo material (video example)">
-     <script src="../build.js"></script>
-  </head>
-  <body>
-      <a-scene>
-        <a-sun-sky material="sunPosition: -0.2 0.5 -5"></a-sun-sky>
 
-        <a-assets>
-          <img id="img1" src="images/img-stereo1.png" />
-          <img id="img2" src="images/img-stereo2.png" />
-          <img id="img3" src="images/img-stereo3.png" />
-          <img id="img4" src="images/img-stereo4.png" />
-          <img id="img5" src="images/img-stereo5.png" />
-          <img id="img6" src="images/img-stereo6.png" />
-          <img id="icon-prev" src="images/icon-prev.png" />
-          <img id="icon-next" src="images/icon-next.png" />
-        </a-assets>
-        <a-entity camera look-controls position="0 10 0" stereo-cam="eye:left;">
-            <a-entity cursor="fuse: true; fuseTimeout: 500"
-                    position="0 0 -1"
-                    scale="0.02 0.02 0"
-                    geometry="primitive: ring;"
-                    material="color: #FFF; shader: flat">
-                    <a-animation begin="cursor-fusing" easing="ease-in" attribute="scale"
-                         fill="backwards" from="0.02 0.02 0" to="0.05 0.05 0"></a-animation>
-          </a-entity>
+<head>
+  <meta charset="utf-8">
+  <title>Aframe - stereo material (video example)</title>
+  <meta name="description" content="Aframe - stereo material (video example)">
+  <script src="../build.js"></script>
+</head>
+
+<body>
+  <a-scene>
+    <a-assets>
+      <img id="img1" src="images/img-stereo1.png" />
+      <img id="img2" src="images/img-stereo2.png" />
+    </a-assets>
+
+    <a-sun-sky material="sunPosition: -0.2 0.5 -5"></a-sun-sky>
+
+    <a-entity camera look-controls wasd-controls="fly:true;" position="0 1 0.5" position="0 0 0" stereo-cam="eye:left;">
+        <a-entity cursor="fuse: true; fuseTimeout: 500" position="0 0 -1" scale="0.02 0.02 0" geometry="primitive: ring;" material="color: #FFF; shader: flat">
+            <a-animation begin="cursor-fusing" easing="ease-in" attribute="scale" fill="backwards" from="0.02 0.02 0" to="0.05 0.05 0"></a-animation>
         </a-entity>
+    </a-entity>
 
-        <!-- buttons -->
-        <a-image id="prev" rotation="90 0 0" position="-0.8 -1.8 -0.6" width="0.3" height="0.3" src="#icon-prev" loadimg></a-image>
-        <a-image id="next" rotation="90 0 0" position="0.8 -1.8 -0.6" width="0.3" height="0.3" src="#icon-next" loadimg></a-image>
+    <!-- box -->
+    <a-entity geometry="primitive: box" material="src: #img1;" stereo-material="eye:left; split:vertical;" position="-2 0 -3" scale="2 2 0.1" rotation="0 0 0"></a-entity>
+    <a-entity geometry="primitive: box" material="src: #img1;" stereo-material="eye:right; split:vertical;" position="-2 0 -3" scale="2 2 0.1" rotation="0 0 0"></a-entity>
 
-        <!-- 180 Grad -->
-        <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 45; open-ended: true; radius: 40; height: 22.5;"
-              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #img1;" stereo-material="eye:left; split:vertical; mode: cinema;"></a-entity>
+    <!-- curved image -->
+    <a-curvedimage material="src: #img2;" stereo-material="eye:left; split:vertical;" height="3.0" radius="5.7" theta-length="72" rotation="0 100 0" scale="0.8 0.8 0.8"></a-curvedimage>
+    <a-curvedimage material="src: #img2;" stereo-material="eye:right; split:vertical;" height="3.0" radius="5.7" theta-length="72" rotation="0 100 0" scale="0.8 0.8 0.8"></a-curvedimage>
 
-      </a-scene>
-    </script>
-  </body>
+  </a-scene>
+  </script>
+</body>
+
 </html>
