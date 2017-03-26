@@ -38,10 +38,10 @@
         <a-image play-video="video" id="video-play" position="0 4 -3" width="4" height="4" src="#play" transparent="true"></a-image>
 
         <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 180; open-ended: true; radius: 12; height: 20;"
-              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:left; split:vertical; mode: cinema;"></a-entity>
+              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:left; split:vertical;"></a-entity>
 
         <a-entity geometry="primitive: cylinder; theta-start: 90; theta-length: 180; open-ended: true; radius: 12; height: 20;"
-              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:right; split:vertical; mode:cinema;"></a-entity>
+              position="0 1.5 0" scale="-1 1 1"  material="shader: flat; src: #video;" stereo-material="eye:right; split:vertical;"></a-entity>
       </a-scene>
       <script>
         var video = document.getElementById('video');
